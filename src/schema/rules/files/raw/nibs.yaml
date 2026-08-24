@@ -1,0 +1,10 @@
+---
+nibs:
+  $ref: meta.templates.raw.task
+  suffixes:
+    - nibs
+  extensions:
+    - .tsv
+    - .json
+  datatypes:
+    - nibs

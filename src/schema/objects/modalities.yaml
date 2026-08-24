@@ -42,3 +42,7 @@ nirs:
 mrs:
   display_name: Magnetic Resonance Spectroscopy
   description: Data acquired with MRS.
+nibs:
+  display_name: Non-Invasive Brain Stimulation
+  description: |
+    Stimulation applied with a non-invasive brain stimulation device.

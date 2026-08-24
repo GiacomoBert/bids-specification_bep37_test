@@ -1,0 +1,11 @@
+---
+NibsHardware:
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+  fields:
+    StimulatorSet: required
+    ElementSet: required
+    IntensitySet: recommended
+    ConcurrentModalities: recommended
+    InstitutionName: recommended

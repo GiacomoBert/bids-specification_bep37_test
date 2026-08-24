@@ -1,0 +1,38 @@
+---
+NibsTable:
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+  initial_columns:
+    - event_id
+    - nibs_type
+  columns:
+    event_id: required
+    nibs_type: required
+    stimulus_shape: required
+    stimulus_intensity: required
+    stimulus_duration: required
+    intensity_reference: recommended
+    intensity_scaling: recommended
+    stimulator_id: required
+    element_id: required
+    pattern1_count: optional
+    pattern1_frequency: optional
+    pattern1_interval: optional
+    pattern1_intensity: optional
+  additional_columns: allowed_if_defined
+
+NibsEvents:
+  selectors:
+    - datatype == "nibs"
+    - suffix == "events"
+    - extension == ".tsv"
+  initial_columns:
+    - onset
+    - duration
+  columns:
+    onset: required
+    duration: required
+    event_id: required
+  additional_columns: allowed_if_defined

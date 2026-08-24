@@ -968,3 +968,99 @@ template_z:
   description: |
     Assumed or ideal position along the z axis.
   type: number
+event_id:
+  name: event_id
+  display_name: Event identifier
+  description: |
+    Label identifying a unique set of stimulation parameters.
+    Links a row of `*_events.tsv` to a row of `*_nibs.tsv`.
+  type: string
+  format: label
+nibs_type:
+  name: nibs_type
+  display_name: NIBS type
+  description: |
+    Class of non-invasive brain stimulation delivered.
+  type: string
+  enum:
+    - TMS
+    - tES
+    - TUS
+    - PNS
+stimulus_shape:
+  name: stimulus_shape
+  display_name: Stimulus shape
+  description: |
+    Waveform of a single stimulus.
+  type: string
+stimulus_intensity:
+  name: stimulus_intensity
+  display_name: Stimulus intensity
+  description: |
+    Intensity of a single stimulus as delivered, per element,
+    `|`-delimited across elements.
+  type: string
+  format: nibs_number_vector
+stimulus_duration:
+  name: stimulus_duration
+  display_name: Stimulus duration
+  description: |
+    Duration of a single stimulus.
+  type: number
+  unit: s
+intensity_reference:
+  name: intensity_reference
+  display_name: Intensity reference
+  description: |
+    Reference against which the intensity was set.
+  type: string
+  format: nibs_label_vector
+intensity_scaling:
+  name: intensity_scaling
+  display_name: Intensity scaling
+  description: |
+    Multiplier applied to the reference intensity, or `absolute`.
+  type: string
+stimulator_id:
+  name: stimulator_id
+  display_name: Stimulator identifier
+  description: |
+    Identifier of the stimulator, defined in `StimulatorSet` in the sidecar.
+  type: string
+  format: nibs_label_vector
+element_id:
+  name: element_id
+  display_name: Element identifier
+  description: |
+    Identifier of the delivering element (coil, electrode, transducer),
+    defined in `ElementSet` in the sidecar.
+  type: string
+  format: nibs_label_vector
+pattern1_count:
+  name: pattern1_count
+  display_name: Pattern 1 count
+  description: |
+    Number of stimuli in one repetition of pattern 1.
+  type: integer
+pattern1_frequency:
+  name: pattern1_frequency
+  display_name: Pattern 1 frequency
+  description: |
+    Rate at which stimuli repeat within pattern 1.
+  type: number
+  unit: Hz
+pattern1_interval:
+  name: pattern1_interval
+  display_name: Pattern 1 interval
+  description: |
+    Time between the onsets of successive stimuli within pattern 1.
+  type: number
+  unit: s
+pattern1_intensity:
+  name: pattern1_intensity
+  display_name: Pattern 1 intensity
+  description: |
+    Intensity of each stimulus within pattern 1, `|`-delimited across repeats.
+    Length MUST equal `pattern1_count`.
+  type: string
+  format: nibs_number_vector

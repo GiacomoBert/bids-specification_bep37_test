@@ -55,3 +55,8 @@ events__mrs:
     - mrs
   entities:
     $ref: meta.templates.raw.mrs.entities
+
+events__nibs:
+  $ref: rules.files.raw.events.events
+  datatypes:
+    - nibs

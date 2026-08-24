@@ -129,3 +129,13 @@ atlas_description:
     suffix: description
     extension: .json
   inherit: true
+
+nibs:
+  selectors:
+    - datatype == "nibs"
+    - suffix == "events"
+    - extension == ".tsv"
+  target:
+    suffix: nibs
+    extension: .tsv
+  inherit: true

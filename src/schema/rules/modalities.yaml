@@ -37,3 +37,6 @@ nirs:
 mrs:
   datatypes:
     - mrs
+nibs:
+  datatypes:
+    - nibs

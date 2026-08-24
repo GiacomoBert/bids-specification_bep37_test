@@ -4674,3 +4674,36 @@ iEEGReference:
     this field should have a general description and the channel specific
     reference should be defined in the `channels.tsv` file.
   type: string
+StimulatorSet:
+  name: StimulatorSet
+  display_name: Stimulator set
+  description: |
+    Object describing each waveform generator referenced by `stimulator_id`.
+  type: object
+  additionalProperties:
+    type: object
+ElementSet:
+  name: ElementSet
+  display_name: Element set
+  description: |
+    Object describing each delivering element (coil, electrode, transducer)
+    referenced by `element_id`.
+  type: object
+  additionalProperties:
+    type: object
+IntensitySet:
+  name: IntensitySet
+  display_name: Intensity set
+  description: |
+    Object describing each intensity reference referenced by `intensity_reference`.
+  type: object
+  additionalProperties:
+    type: object
+ConcurrentModalities:
+  name: ConcurrentModalities
+  display_name: Concurrent modalities
+  description: |
+    Recording modalities acquired concurrently with the stimulation.
+  type: array
+  items:
+    type: string

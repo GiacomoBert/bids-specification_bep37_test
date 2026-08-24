@@ -1,0 +1,68 @@
+---
+NibsTypeConsistent:
+  issue:
+    code: NIBS_TYPE_MISSING
+    message: |
+      Every row of *_nibs.tsv must declare a nibs_type.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+  checks:
+    - intersects(columns.nibs_type, ["TMS", "tES", "TUS", "PNS"])
+
+TESIntensitySumsToZero:
+  issue:
+    code: NIBS_TES_INTENSITY_SUM
+    message: |
+      For tES, the `|`-delimited intensities across elements in a row must sum to zero.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - intersects(columns.nibs_type, ["tES"])
+  checks:
+    - allequal(round(sum(split(filter(columns.stimulus_intensity, columns.nibs_type, "tES"), "|")), 6), 0)
+
+Pattern1IntensityLength:
+  issue:
+    code: NIBS_PATTERN1_INTENSITY_LENGTH
+    message: |
+      The number of `|`-delimited values in pattern1_intensity must equal pattern1_count.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+  checks:
+    - allequal(lengths(split(filter(columns.pattern1_intensity, columns.pattern1_intensity, "n/a", true), "|")), number(filter(columns.pattern1_count, columns.pattern1_intensity, "n/a", true)))
+
+EventIdResolves:
+  issue:
+    code: NIBS_EVENT_ID_UNRESOLVED
+    message: |
+      Every event_id in *_events.tsv must match a row of the associated *_nibs.tsv.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "events"
+    - extension == ".tsv"
+    - '"nibs" in associations'
+  checks:
+    - subset(columns.event_id, associations.nibs.event_id)
+
+ElementIdDefined:
+  issue:
+    code: NIBS_ELEMENT_ID_UNDEFINED
+    message: |
+      Every element_id used in *_nibs.tsv must be a key of ElementSet in the sidecar.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - sidecar.ElementSet != null
+  checks:
+    - subset(flatten(split(columns.element_id, "|")), keys(sidecar.ElementSet))

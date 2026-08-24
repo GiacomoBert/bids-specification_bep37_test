@@ -76,3 +76,8 @@ nirs:
   value: nirs
   display_name: Near-Infrared Spectroscopy
   description: Near-Infrared Spectroscopy data organized around the SNIRF format
+nibs:
+  value: nibs
+  display_name: Non-Invasive Brain Stimulation
+  description: |
+    Applied non-invasive brain stimulation (TMS, tES, TUS, PNS).

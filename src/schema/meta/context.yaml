@@ -142,6 +142,20 @@ properties:
     type: object
     additionalProperties: false
     properties:
+      nibs:
+        description: 'NIBS parameter table'
+        type: object
+        required: [path]
+        additionalProperties: false
+        properties:
+          path:
+            description: Path to associated nibs file
+            type: string
+          event_id:
+            description: Contents of the event_id column
+            type: array
+            items:
+              type: string
       events:
         description: 'Events file'
         type: object
