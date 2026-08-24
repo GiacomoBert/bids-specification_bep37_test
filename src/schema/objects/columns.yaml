@@ -968,99 +968,761 @@ template_z:
   description: |
     Assumed or ideal position along the z axis.
   type: number
-event_id:
-  name: event_id
-  display_name: Event identifier
-  description: |
-    Label identifying a unique set of stimulation parameters.
-    Links a row of `*_events.tsv` to a row of `*_nibs.tsv`.
+# NIBS-BIDS (BEP037) columns
+nibs_event_id:
+  name: nibs_event_id
+  display_name: NIBS event identifier
+  description: 'Identifier of a stimulation parameter set.
+
+    Referenced from `*_events.tsv`.
+
+    MUST be unique within `*_nibs.tsv`.
+
+    '
   type: string
-  format: label
 nibs_type:
   name: nibs_type
   display_name: NIBS type
-  description: |
-    Class of non-invasive brain stimulation delivered.
+  description: 'Stimulation modality.
+
+    PNS uses whichever physical technology applies, and the stimulated nerve is described in
+
+    `*_markers.tsv`.
+
+    '
   type: string
   enum:
-    - TMS
-    - tES
-    - TUS
-    - PNS
-stimulus_shape:
-  name: stimulus_shape
-  display_name: Stimulus shape
-  description: |
-    Waveform of a single stimulus.
-  type: string
-stimulus_intensity:
-  name: stimulus_intensity
-  display_name: Stimulus intensity
-  description: |
-    Intensity of a single stimulus as delivered, per element,
-    `|`-delimited across elements.
-  type: string
-  format: nibs_number_vector
-stimulus_duration:
-  name: stimulus_duration
-  display_name: Stimulus duration
-  description: |
-    Duration of a single stimulus.
-  type: number
-  unit: s
-intensity_reference:
-  name: intensity_reference
-  display_name: Intensity reference
-  description: |
-    Reference against which the intensity was set.
-  type: string
-  format: nibs_label_vector
-intensity_scaling:
-  name: intensity_scaling
-  display_name: Intensity scaling
-  description: |
-    Multiplier applied to the reference intensity, or `absolute`.
-  type: string
+  - TMS
+  - tES
+  - TUS
+  - PNS
 stimulator_id:
   name: stimulator_id
   display_name: Stimulator identifier
-  description: |
-    Identifier of the stimulator, defined in `StimulatorSet` in the sidecar.
+  description: 'Device that generates the stimulus waveform.
+
+    References `StimulatorSet.StimulatorID` in `*_nibs.json`.
+
+    '
   type: string
-  format: nibs_label_vector
-element_id:
-  name: element_id
-  display_name: Element identifier
-  description: |
-    Identifier of the delivering element (coil, electrode, transducer),
-    defined in `ElementSet` in the sidecar.
+nibs_element_id:
+  name: nibs_element_id
+  display_name: NIBS element identifier
+  description: 'Element that delivers the stimulation.
+
+    References `ElementSet.ElementID` in `*_nibs.json`.
+
+    Multiple simultaneous elements are separated by `|`.
+
+    '
   type: string
-  format: nibs_label_vector
+  delimiter: '|'
+stimulus_shape:
+  name: stimulus_shape
+  display_name: Stimulus shape
+  description: 'Waveform shape of the base stimulus.
+
+    `Monophasic`, `Biphasic` and `Halfsine` apply to TMS;
+
+    `Rectangle`, `Sinusoid` and `Noise` apply to tES;
+
+    `Sinusoid` applies to TUS;
+
+    `Custom` applies to any modality and requires `stimulus_description`.
+
+    '
+  type: string
+  enum:
+  - Monophasic
+  - Biphasic
+  - Halfsine
+  - Rectangle
+  - Sinusoid
+  - Noise
+  - Custom
+stimulus_intensity:
+  name: stimulus_intensity
+  display_name: Stimulus intensity
+  description: 'Delivered amplitude of the base stimulus.
+
+    Units are modality dependent and MUST be declared in `*_nibs.json`.
+
+    With multiple elements, one value per element separated by `|`;
+
+    for `tES` the delimited values MUST sum to 0.
+
+    Set to `n/a` when per-stimulus intensities are given in `pattern1_intensity`.
+
+    '
+  type: number
+  delimiter: '|'
+stimulus_duration:
+  name: stimulus_duration
+  display_name: Stimulus duration
+  description: 'Duration of the base stimulus, the time during which contiguous non-zero current or energy
+
+    is delivered.
+
+    '
+  type: number
+first_inflection:
+  name: first_inflection
+  display_name: First inflection
+  description: '(TMS) Direction of the first deflection of the induced current, corresponding to the normal
+
+    or reverse setting on the stimulator.
+
+    '
+  type: string
+  enum:
+  - rising
+  - descending
+current_direction:
+  name: current_direction
+  display_name: Coil current direction
+  description: '(TMS) Direction of current flow in the coil winding, read with the stimulating face pointing
+
+    away from the viewer and the handle pointing away.
+
+    `cl` and `co` describe a circular coil, clockwise and counterclockwise.
+
+    `cl-co` and `co-cl` describe a figure-of-eight coil, left wing then right wing.
+
+    `other` requires a free-text description under `Levels.other`.
+
+    May be `|`-delimited and aligned to `nibs_element_id`.
+
+    '
+  type: string
+  enum:
+  - cl
+  - co
+  - cl-co
+  - co-cl
+  - other
+  delimiter: '|'
+ramp_up:
+  name: ramp_up
+  display_name: Ramp up
+  description: '(`Rectangle`) Duration of the linear current ramp at the start of the block.
+
+    '
+  type: number
+ramp_down:
+  name: ramp_down
+  display_name: Ramp down
+  description: '(`Rectangle`) Duration of the linear current ramp at the end of the block.
+
+    '
+  type: number
+frequency:
+  name: frequency
+  display_name: Frequency
+  description: '(`Sinusoid`) Oscillation frequency for tACS, or carrier frequency for TUS.
+
+    '
+  type: number
+starting_phase:
+  name: starting_phase
+  display_name: Starting phase
+  description: '(`Sinusoid`) Starting phase in degrees.
+
+    May be `|`-delimited and aligned with `nibs_element_id` for phase-shifted or anti-phase tACS.
+
+    '
+  type: number
+  delimiter: '|'
+offset:
+  name: offset
+  display_name: Offset
+  description: '(`Sinusoid`) Constant component added to the oscillation.
+
+    '
+  type: number
+noise_type:
+  name: noise_type
+  display_name: Noise type
+  description: '(`Noise`) Spectral character of the noise, for example `white` or `pink`.
+
+    '
+  type: string
+frequency_low:
+  name: frequency_low
+  display_name: Lower frequency bound
+  description: '(`Noise`) Lower bound of the randomized band.
+
+    '
+  type: number
+frequency_high:
+  name: frequency_high
+  display_name: Upper frequency bound
+  description: '(`Noise`) Upper bound of the randomized band.
+
+    '
+  type: number
+distribution:
+  name: distribution
+  display_name: Amplitude distribution
+  description: '(`Noise`) Amplitude distribution, for example `gaussian`.
+
+    '
+  type: string
+stimulus_description:
+  name: stimulus_description
+  display_name: Stimulus description
+  description: '(`Custom`) Free-text description of a waveform not covered by the `stimulus_shape` vocabulary.
+
+    '
+  type: string
+intensity_reference:
+  name: intensity_reference
+  display_name: Intensity reference
+  description: 'Anchor used to set the intensity.
+
+    References `IntensitySet.IntensityID` in `*_nibs.json`.
+
+    `absolute` is reserved for directly specified intensities and needs no `IntensitySet` entry.
+
+    '
+  type: string
+  enum:
+  - rMT
+  - aMT
+  - 1mV
+  - e-field
+  - absolute
+  delimiter: '|'
+intensity_scaling:
+  name: intensity_scaling
+  display_name: Intensity scaling
+  description: 'Multiplier applied to the reference value, for example `0.8` for 80% of the reference,
+
+    or `absolute` for a directly specified value.
+
+    '
+  type: string
+  format: nibs_scaling
+  delimiter: '|'
+stimulus_count:
+  name: stimulus_count
+  display_name: Stimulus count
+  description: 'Counter of deliveries of the same parameter set to the same position within the file.
+
+    For counting only, and MUST NOT be used for synchronization.
+
+    '
+  type: number
+stimulus_validation:
+  name: stimulus_validation
+  display_name: Stimulus validation
+  description: 'Whether delivery or positioning was verified.
+
+    '
+  type: string
+  enum:
+  - verified
+  - observed
+  - not_verified
+  - unknown
+subject_feedback:
+  name: subject_feedback
+  display_name: Subject feedback
+  description: 'Participant-reported perception or discomfort.
+
+    '
+  type: string
+timestamp:
+  name: timestamp
+  display_name: Timestamp
+  description: 'ISO 8601 time at which the stimulation occurred or was logged.
+
+    '
+  type: string
+  format: datetime
+electric_field_target:
+  name: electric_field_target
+  display_name: Electric field at target
+  description: '(TMS) Electric field at the target, as reported or modelled by the device or navigation
+    system.
+
+    '
+  type: number
+electric_field_max:
+  name: electric_field_max
+  display_name: Peak electric field
+  description: '(TMS) Peak electric field, as reported or modelled.
+
+    '
+  type: number
+electric_field_units:
+  name: electric_field_units
+  display_name: Electric field units
+  description: 'Units for the electric-field values, RECOMMENDED `V/m`.
+
+    '
+  type: string
+  format: unit
+electric_field_model_name:
+  name: electric_field_model_name
+  display_name: Electric field model name
+  description: 'Source model or system for the electric-field values.
+
+    '
+  type: string
+electric_field_model_version:
+  name: electric_field_model_version
+  display_name: Electric field model version
+  description: 'Version of the model or system that produced the electric-field values.
+
+    '
+  type: string
+contact_impedance:
+  name: contact_impedance
+  display_name: Contact impedance
+  description: '(tES) Measured contact impedance, one value per element when `|`-delimited.
+
+    '
+  type: number
+  delimiter: '|'
+measured_current_intensity:
+  name: measured_current_intensity
+  display_name: Measured current intensity
+  description: '(tES) Device-reported delivered current.
+
+    '
+  type: number
+measured_voltage_intensity:
+  name: measured_voltage_intensity
+  display_name: Measured voltage intensity
+  description: '(tES) Device-reported delivered voltage.
+
+    '
+  type: number
+current_statistics:
+  name: current_statistics
+  display_name: Current statistics
+  description: '(tES) Device summary statistics for the delivered current.
+
+    '
+  type: string
+measured_peak_negative_pressure:
+  name: measured_peak_negative_pressure
+  display_name: Measured peak negative pressure
+  description: '(TUS) Estimated or measured peak negative pressure.
+
+    '
+  type: number
+spatial_peak_pulse_average_intensity:
+  name: spatial_peak_pulse_average_intensity
+  display_name: Spatial peak pulse average intensity
+  description: '(TUS) ISPPA for the delivered stimulation.
+
+    '
+  type: number
+spatial_peak_temporal_average_intensity:
+  name: spatial_peak_temporal_average_intensity
+  display_name: Spatial peak temporal average intensity
+  description: '(TUS) ISPTA for the delivered stimulation.
+
+    '
+  type: number
+mechanical_index:
+  name: mechanical_index
+  display_name: Mechanical index
+  description: '(TUS) Mechanical Index.
+
+    '
+  type: number
+thermal_index:
+  name: thermal_index
+  display_name: Thermal index
+  description: '(TUS) Thermal Index.
+
+    '
+  type: number
+nibs_event_id__events:
+  name: nibs_event_id
+  display_name: NIBS event identifier
+  description: 'References `nibs_event_id` in `*_nibs.tsv`, giving the temporal parameters of this delivery.
+
+    '
+  type: string
+nibs_position_id__events:
+  name: nibs_position_id
+  display_name: NIBS position identifier
+  description: 'References `nibs_position_id` in `*_markers.tsv`, giving the position of the element or
+    elements.
+
+    May be `|`-delimited, one position per element, in the same order as `nibs_element_id`.
+
+    '
+  type: string
+  delimiter: '|'
+nibs_position_id:
+  name: nibs_position_id
+  display_name: NIBS position identifier
+  description: 'Identifier of one element placement.
+
+    MUST be unique within `*_markers.tsv`.
+
+    '
+  type: string
+nibs_element_id__markers:
+  name: nibs_element_id
+  display_name: NIBS element identifier
+  description: 'Element placed at this position.
+
+    References `ElementSet.ElementID` in `*_nibs.json`.
+
+    '
+  type: string
+position_label:
+  name: position_label
+  display_name: Position label
+  description: 'Standardized label for the placement, for example the 10-20 or 10-10 site `C3`,
+
+    or a site name such as `M1_hand` or `DLPFC`.
+
+    '
+  type: string
+position_description:
+  name: position_description
+  display_name: Position description
+  description: 'Free-text description of the placement and how it was located.
+
+    '
+  type: string
+position_group:
+  name: position_group
+  display_name: Position group
+  description: 'Organizational grouping label, for example montage membership.
+
+    MUST NOT be used for linkage or synchronization.
+
+    '
+  type: string
+element_distance:
+  name: element_distance
+  display_name: Element distance
+  description: 'Physical distance from the element surface to the scalp, for example the thickness of
+    padding,
+
+    gel, or hair.
+
+    This affects the delivered dose and SHOULD be recorded whenever it is known, independently of
+
+    whether neuronavigation was used.
+
+    '
+  type: number
+target_label:
+  name: target_label
+  display_name: Target label
+  description: 'Standardized label or anatomical name of the intended target.
+
+    '
+  type: string
+peeling_depth:
+  name: peeling_depth
+  display_name: Peeling depth
+  description: 'Depth from the scalp or cortical surface to the target, as reported by a neuronavigation
+    system.
+
+    Distinct from `element_distance`, which is the physical standoff of the element from the scalp.
+
+    '
+  type: number
+element_centre_x:
+  name: element_centre_x
+  display_name: Element centre x
+  description: 'x coordinate of the centre of the element.
+
+    '
+  type: number
+target_x:
+  name: target_x
+  display_name: Target x
+  description: 'x coordinate of the intended target, for example a cortical site or an acoustic focus.
+
+    '
+  type: number
+efield_max_x:
+  name: efield_max_x
+  display_name: Electric field maximum x
+  description: 'x coordinate of the location of maximum electric field, when modelled.
+
+    '
+  type: number
+element_centre_y:
+  name: element_centre_y
+  display_name: Element centre y
+  description: 'y coordinate of the centre of the element.
+
+    '
+  type: number
+target_y:
+  name: target_y
+  display_name: Target y
+  description: 'y coordinate of the intended target, for example a cortical site or an acoustic focus.
+
+    '
+  type: number
+efield_max_y:
+  name: efield_max_y
+  display_name: Electric field maximum y
+  description: 'y coordinate of the location of maximum electric field, when modelled.
+
+    '
+  type: number
+element_centre_z:
+  name: element_centre_z
+  display_name: Element centre z
+  description: 'z coordinate of the centre of the element.
+
+    '
+  type: number
+target_z:
+  name: target_z
+  display_name: Target z
+  description: 'z coordinate of the intended target, for example a cortical site or an acoustic focus.
+
+    '
+  type: number
+efield_max_z:
+  name: efield_max_z
+  display_name: Electric field maximum z
+  description: 'z coordinate of the location of maximum electric field, when modelled.
+
+    '
+  type: number
+element_xdir_x:
+  name: element_xdir_x
+  display_name: Element x axis, x component
+  description: 'x component of the element x axis.
+
+    '
+  type: number
+element_xdir_y:
+  name: element_xdir_y
+  display_name: Element x axis, y component
+  description: 'y component of the element x axis.
+
+    '
+  type: number
+element_xdir_z:
+  name: element_xdir_z
+  display_name: Element x axis, z component
+  description: 'z component of the element x axis.
+
+    '
+  type: number
+element_ydir_x:
+  name: element_ydir_x
+  display_name: Element y axis, x component
+  description: 'x component of the element y axis, which runs along the handle or leading edge.
+
+    '
+  type: number
+element_ydir_y:
+  name: element_ydir_y
+  display_name: Element y axis, y component
+  description: 'y component of the element y axis, which runs along the handle or leading edge.
+
+    '
+  type: number
+element_ydir_z:
+  name: element_ydir_z
+  display_name: Element y axis, z component
+  description: 'z component of the element y axis, which runs along the handle or leading edge.
+
+    '
+  type: number
+element_zdir_x:
+  name: element_zdir_x
+  display_name: Element z axis, x component
+  description: 'x component of the element z axis, which points from the element into the head.
+
+    '
+  type: number
+element_zdir_y:
+  name: element_zdir_y
+  display_name: Element z axis, y component
+  description: 'y component of the element z axis, which points from the element into the head.
+
+    '
+  type: number
+element_zdir_z:
+  name: element_zdir_z
+  display_name: Element z axis, z component
+  description: 'z component of the element z axis, which points from the element into the head.
+
+    '
+  type: number
 pattern1_count:
   name: pattern1_count
   display_name: Pattern 1 count
-  description: |
-    Number of stimuli in one repetition of pattern 1.
-  type: integer
-pattern1_frequency:
-  name: pattern1_frequency
-  display_name: Pattern 1 frequency
-  description: |
-    Rate at which stimuli repeat within pattern 1.
+  description: 'Number of base stimuli in one `pattern1`.
+
+    '
   type: number
-  unit: Hz
 pattern1_interval:
   name: pattern1_interval
   display_name: Pattern 1 interval
-  description: |
-    Time between the onsets of successive stimuli within pattern 1.
+  description: 'Onset-to-onset interval between consecutive base stimuli.
+
+    '
   type: number
-  unit: s
+pattern1_frequency:
+  name: pattern1_frequency
+  display_name: Pattern 1 frequency
+  description: 'Repetition frequency of the layer, equal to 1 / `pattern1_interval` in seconds.
+
+    Provide `interval` or `frequency`.
+
+    '
+  type: number
+pattern1_duration:
+  name: pattern1_duration
+  display_name: Pattern 1 duration
+  description: 'Total duration of the layer, including the interval after the final unit.
+
+    '
+  type: number
 pattern1_intensity:
   name: pattern1_intensity
   display_name: Pattern 1 intensity
-  description: |
-    Intensity of each stimulus within pattern 1, `|`-delimited across repeats.
-    Length MUST equal `pattern1_count`.
-  type: string
-  format: nibs_number_vector
+  description: 'Per-unit intensities when intensity changes across units in the layer.
+
+    Values separated by `|`, with length equal to `pattern1_count`.
+
+    When used at `pattern1`, set `stimulus_intensity` to `n/a`.
+
+    '
+  type: number
+  delimiter: '|'
+pattern2_count:
+  name: pattern2_count
+  display_name: Pattern 2 count
+  description: 'Number of `pattern1` units in one `pattern2`.
+
+    '
+  type: number
+pattern2_interval:
+  name: pattern2_interval
+  display_name: Pattern 2 interval
+  description: 'Onset-to-onset interval between consecutive `pattern1` units.
+
+    '
+  type: number
+pattern2_frequency:
+  name: pattern2_frequency
+  display_name: Pattern 2 frequency
+  description: 'Repetition frequency of the layer, equal to 1 / `pattern2_interval` in seconds.
+
+    Provide `interval` or `frequency`.
+
+    '
+  type: number
+pattern2_duration:
+  name: pattern2_duration
+  display_name: Pattern 2 duration
+  description: 'Total duration of the layer, including the interval after the final unit.
+
+    '
+  type: number
+pattern2_intensity:
+  name: pattern2_intensity
+  display_name: Pattern 2 intensity
+  description: 'Per-unit intensities when intensity changes across units in the layer.
+
+    Values separated by `|`, with length equal to `pattern2_count`.
+
+    When used at `pattern1`, set `stimulus_intensity` to `n/a`.
+
+    '
+  type: number
+  delimiter: '|'
+pattern3_count:
+  name: pattern3_count
+  display_name: Pattern 3 count
+  description: 'Number of `pattern2` units in one `pattern3`.
+
+    '
+  type: number
+pattern3_interval:
+  name: pattern3_interval
+  display_name: Pattern 3 interval
+  description: 'Onset-to-onset interval between consecutive `pattern2` units.
+
+    '
+  type: number
+pattern3_frequency:
+  name: pattern3_frequency
+  display_name: Pattern 3 frequency
+  description: 'Repetition frequency of the layer, equal to 1 / `pattern3_interval` in seconds.
+
+    Provide `interval` or `frequency`.
+
+    '
+  type: number
+pattern3_duration:
+  name: pattern3_duration
+  display_name: Pattern 3 duration
+  description: 'Total duration of the layer, including the interval after the final unit.
+
+    '
+  type: number
+pattern3_intensity:
+  name: pattern3_intensity
+  display_name: Pattern 3 intensity
+  description: 'Per-unit intensities when intensity changes across units in the layer.
+
+    Values separated by `|`, with length equal to `pattern3_count`.
+
+    When used at `pattern1`, set `stimulus_intensity` to `n/a`.
+
+    '
+  type: number
+  delimiter: '|'
+pattern4_count:
+  name: pattern4_count
+  display_name: Pattern 4 count
+  description: 'Number of `pattern3` units in one `pattern4`.
+
+    '
+  type: number
+pattern4_interval:
+  name: pattern4_interval
+  display_name: Pattern 4 interval
+  description: 'Onset-to-onset interval between consecutive `pattern3` units.
+
+    '
+  type: number
+pattern4_frequency:
+  name: pattern4_frequency
+  display_name: Pattern 4 frequency
+  description: 'Repetition frequency of the layer, equal to 1 / `pattern4_interval` in seconds.
+
+    Provide `interval` or `frequency`.
+
+    '
+  type: number
+pattern4_duration:
+  name: pattern4_duration
+  display_name: Pattern 4 duration
+  description: 'Total duration of the layer, including the interval after the final unit.
+
+    '
+  type: number
+pattern4_intensity:
+  name: pattern4_intensity
+  display_name: Pattern 4 intensity
+  description: 'Per-unit intensities when intensity changes across units in the layer.
+
+    Values separated by `|`, with length equal to `pattern4_count`.
+
+    When used at `pattern1`, set `stimulus_intensity` to `n/a`.
+
+    '
+  type: number
+  delimiter: '|'

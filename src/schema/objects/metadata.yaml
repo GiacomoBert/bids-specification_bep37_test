@@ -4674,36 +4674,720 @@ iEEGReference:
     this field should have a general description and the channel specific
     reference should be defined in the `channels.tsv` file.
   type: string
-StimulatorSet:
-  name: StimulatorSet
-  display_name: Stimulator set
-  description: |
-    Object describing each waveform generator referenced by `stimulator_id`.
+# NIBS-BIDS (BEP037) metadata
+StimulatorID:
+  name: StimulatorID
+  display_name: Stimulator identifier
+  description: 'Unique identifier of a stimulator, referenced from the `stimulator_id` column.
+
+    '
+  type: string
+ElementID:
+  name: ElementID
+  display_name: Element identifier
+  description: 'Unique identifier of a stimulation element, referenced from the `nibs_element_id` column.
+
+    '
+  type: string
+IntensityID:
+  name: IntensityID
+  display_name: Intensity identifier
+  description: 'Unique identifier of an intensity reference, referenced from the `intensity_reference`
+    column.
+
+    '
+  type: string
+ElementType:
+  name: ElementType
+  display_name: Element type
+  description: 'Physical class of the stimulation element.
+
+    '
+  type: string
+  enum:
+  - coil
+  - electrode
+  - transducer
+ModelName:
+  name: ModelName
+  display_name: Model name
+  description: 'Model name or number.
+
+    '
+  type: string
+SerialNumber:
+  name: SerialNumber
+  display_name: Serial number
+  description: 'Serial number.
+
+    '
+  type: string
+CoilShape:
+  name: CoilShape
+  display_name: Coil shape
+  description: 'Winding geometry of a coil, for example figure-of-eight or circular.
+
+    '
+  type: string
+CoilCooling:
+  name: CoilCooling
+  display_name: Coil cooling
+  description: 'Cooling method of a coil, for example air, liquid, or passive.
+
+    '
+  type: string
+CoilDiameter:
+  name: CoilDiameter
+  display_name: Coil diameter
+  description: 'Wing or loop diameter of a coil.
+
+    '
   type: object
   additionalProperties:
-    type: object
-ElementSet:
-  name: ElementSet
-  display_name: Element set
-  description: |
-    Object describing each delivering element (coil, electrode, transducer)
-    referenced by `element_id`.
+    type:
+    - string
+    - number
+    - array
+MagneticFieldPeak:
+  name: MagneticFieldPeak
+  display_name: Peak magnetic field
+  description: 'Peak magnetic field produced by the coil.
+
+    '
   type: object
   additionalProperties:
-    type: object
-IntensitySet:
-  name: IntensitySet
-  display_name: Intensity set
-  description: |
-    Object describing each intensity reference referenced by `intensity_reference`.
+    type:
+    - string
+    - number
+    - array
+MagneticFieldPenetrationDepth:
+  name: MagneticFieldPenetrationDepth
+  display_name: Magnetic field penetration depth
+  description: 'Penetration depth of the magnetic field.
+
+    '
   type: object
   additionalProperties:
-    type: object
+    type:
+    - string
+    - number
+    - array
+MagneticFieldGradient:
+  name: MagneticFieldGradient
+  display_name: Magnetic field gradient
+  description: 'Gradient of the magnetic field.
+
+    '
+  type: object
+  additionalProperties:
+    type:
+    - string
+    - number
+    - array
+ElectrodeRole:
+  name: ElectrodeRole
+  display_name: Electrode role
+  description: 'Role of an electrode in the montage.
+
+    '
+  type: string
+  enum:
+  - anode
+  - cathode
+  - return
+  - ground
+  - other
+Shape:
+  name: Shape
+  display_name: Shape
+  description: 'Shape of an electrode.
+
+    '
+  type: string
+ElectrodeSize:
+  name: ElectrodeSize
+  display_name: Electrode size
+  description: 'Size or contact area of an electrode.
+
+    '
+  type: object
+  additionalProperties:
+    type:
+    - string
+    - number
+    - array
+Thickness:
+  name: Thickness
+  display_name: Thickness
+  description: 'Thickness of an electrode.
+
+    '
+  type: object
+  additionalProperties:
+    type:
+    - string
+    - number
+    - array
+Material:
+  name: Material
+  display_name: Material
+  description: 'Conductive material of an electrode.
+
+    '
+  type: string
+ElectrodeContactMedium:
+  name: ElectrodeContactMedium
+  display_name: Electrode contact medium
+  description: 'Coupling medium, for example gel, saline, paste, or dry.
+
+    '
+  type: string
+ElectrodePreparation:
+  name: ElectrodePreparation
+  display_name: Electrode preparation
+  description: 'Skin preparation procedure.
+
+    '
+  type: string
+TransducerType:
+  name: TransducerType
+  display_name: Transducer type
+  description: 'Construction of an ultrasound transducer.
+
+    '
+  type: string
+  enum:
+  - single-element
+  - phased-array
+  - planar
+  - custom
+FocusType:
+  name: FocusType
+  display_name: Focus type
+  description: 'Focusing method of an ultrasound transducer.
+
+    '
+  type: string
+CarrierFrequency:
+  name: CarrierFrequency
+  display_name: Carrier frequency
+  description: 'Carrier frequency of an ultrasound transducer.
+
+    '
+  type: object
+  additionalProperties:
+    type:
+    - string
+    - number
+    - array
+FocalDepth:
+  name: FocalDepth
+  display_name: Focal depth
+  description: 'Focal depth of an ultrasound transducer.
+
+    '
+  type: object
+  additionalProperties:
+    type:
+    - string
+    - number
+    - array
+ApertureDiameter:
+  name: ApertureDiameter
+  display_name: Aperture diameter
+  description: 'Aperture diameter of an ultrasound transducer.
+
+    '
+  type: object
+  additionalProperties:
+    type:
+    - string
+    - number
+    - array
+MaxPeakNegativePressure:
+  name: MaxPeakNegativePressure
+  display_name: Maximum peak negative pressure
+  description: 'Maximum peak negative pressure of an ultrasound transducer.
+
+    '
+  type: object
+  additionalProperties:
+    type:
+    - string
+    - number
+    - array
+MaxMechanicalIndex:
+  name: MaxMechanicalIndex
+  display_name: Maximum mechanical index
+  description: 'Maximum Mechanical Index of an ultrasound transducer.
+
+    '
+  type: number
+TransducerContactMedium:
+  name: TransducerContactMedium
+  display_name: Transducer contact medium
+  description: 'Coupling medium used with an ultrasound transducer.
+
+    '
+  type: string
+NumberOfElements:
+  name: NumberOfElements
+  display_name: Number of elements
+  description: 'Number of elements in a phased array.
+
+    '
+  type: number
+ElementPitch:
+  name: ElementPitch
+  display_name: Element pitch
+  description: 'Spacing between elements of a phased array.
+
+    '
+  type: object
+  additionalProperties:
+    type:
+    - string
+    - number
+    - array
+ArrayGeometry:
+  name: ArrayGeometry
+  display_name: Array geometry
+  description: 'Geometry of a phased array.
+
+    '
+  type: string
+Criterion:
+  name: Criterion
+  display_name: Criterion
+  description: 'Criterion defining an intensity reference, for example "1 mV MEP".
+
+    '
+  type: string
+Algorithm:
+  name: Algorithm
+  display_name: Algorithm
+  description: 'Estimation procedure for an intensity reference, for example "5/10" or "PEST".
+
+    '
+  type: string
+MeasurementMethod:
+  name: MeasurementMethod
+  display_name: Measurement method
+  description: 'Modality used to assess the response, for example EMG MEP or visual report.
+
+    '
+  type: string
+Navigation:
+  name: Navigation
+  display_name: Navigation
+  description: 'Whether a navigation, tracking, or positioning system was used.
+
+    '
+  type: boolean
+NavigationHardwareType:
+  name: NavigationHardwareType
+  display_name: Navigation hardware type
+  description: 'For example `optical_tracking`, `robot`, `cobot`, or `mechanical_arm`.
+
+    '
+  type: string
+NavigationModelName:
+  name: NavigationModelName
+  display_name: Navigation model name
+  description: 'Vendor or model of the navigation system.
+
+    '
+  type: string
+NavigationSoftwareVersion:
+  name: NavigationSoftwareVersion
+  display_name: Navigation software version
+  description: 'Software version of the navigation system.
+
+    '
+  type: string
+NavigationHardwareSerialNumber:
+  name: NavigationHardwareSerialNumber
+  display_name: Navigation hardware serial number
+  description: 'Serial number or identifier of the navigation hardware.
+
+    '
+  type: string
+NavigationNotes:
+  name: NavigationNotes
+  display_name: Navigation notes
+  description: 'Setup notes, for example camera type or calibration procedure.
+
+    '
+  type: string
+NIBSDescription:
+  name: NIBSDescription
+  display_name: NIBS description
+  description: 'Free-text summary of the stimulation protocol.
+
+    '
+  type: string
 ConcurrentModalities:
   name: ConcurrentModalities
   display_name: Concurrent modalities
-  description: |
-    Recording modalities acquired concurrently with the stimulation.
+  description: 'Modalities recorded concurrently with the stimulation, for example `["eeg"]`, `["emg"]`,
+
+    `["ieeg"]`, or `["none"]`.
+
+    '
   type: array
   items:
     type: string
+Value:
+  name: Value
+  display_name: Value
+  description: 'Numeric value of the quantity described by the enclosing object.
+
+    '
+  type: number
+ElementSet:
+  name: ElementSet
+  display_name: Element set
+  description: 'Array describing the elements that deliver the stimulation.
+
+    Each entry is referenced from the `nibs_element_id` column through `ElementID`.
+
+    `ElementType` selects which type-specific fields apply.
+
+    '
+  type: array
+  items:
+    type: object
+    required:
+    - ElementID
+    - ElementType
+    recommended:
+    - ModelName
+    properties:
+      ElementID:
+        $ref: objects.metadata.ElementID
+      ElementType:
+        $ref: objects.metadata.ElementType
+      ModelName:
+        $ref: objects.metadata.ModelName
+      SerialNumber:
+        $ref: objects.metadata.SerialNumber
+      CoilShape:
+        $ref: objects.metadata.CoilShape
+      CoilCooling:
+        $ref: objects.metadata.CoilCooling
+      CoilDiameter:
+        $ref: objects.metadata.CoilDiameter
+      MagneticFieldPeak:
+        $ref: objects.metadata.MagneticFieldPeak
+      MagneticFieldPenetrationDepth:
+        $ref: objects.metadata.MagneticFieldPenetrationDepth
+      MagneticFieldGradient:
+        $ref: objects.metadata.MagneticFieldGradient
+      ElectrodeRole:
+        $ref: objects.metadata.ElectrodeRole
+      Shape:
+        $ref: objects.metadata.Shape
+      ElectrodeSize:
+        $ref: objects.metadata.ElectrodeSize
+      Thickness:
+        $ref: objects.metadata.Thickness
+      Material:
+        $ref: objects.metadata.Material
+      ElectrodeContactMedium:
+        $ref: objects.metadata.ElectrodeContactMedium
+      ElectrodePreparation:
+        $ref: objects.metadata.ElectrodePreparation
+      TransducerType:
+        $ref: objects.metadata.TransducerType
+      FocusType:
+        $ref: objects.metadata.FocusType
+      CarrierFrequency:
+        $ref: objects.metadata.CarrierFrequency
+      FocalDepth:
+        $ref: objects.metadata.FocalDepth
+      ApertureDiameter:
+        $ref: objects.metadata.ApertureDiameter
+      MaxPeakNegativePressure:
+        $ref: objects.metadata.MaxPeakNegativePressure
+      MaxMechanicalIndex:
+        $ref: objects.metadata.MaxMechanicalIndex
+      TransducerContactMedium:
+        $ref: objects.metadata.TransducerContactMedium
+      NumberOfElements:
+        $ref: objects.metadata.NumberOfElements
+      ElementPitch:
+        $ref: objects.metadata.ElementPitch
+      ArrayGeometry:
+        $ref: objects.metadata.ArrayGeometry
+StimulatorSet:
+  name: StimulatorSet
+  display_name: Stimulator set
+  description: 'Description of the device or devices that generate the stimulus waveform.
+
+    Each entry is referenced from the `stimulator_id` column through `StimulatorID`.
+
+    The specification types this field as an object while `ElementSet` and `IntensitySet` are
+
+    arrays; both shapes are accepted here.
+
+    '
+  anyOf:
+  - type: array
+    items:
+      type: object
+      required:
+      - StimulatorID
+      recommended:
+      - Manufacturer
+      - ManufacturersModelName
+      properties:
+        StimulatorID:
+          $ref: objects.metadata.StimulatorID
+        Manufacturer:
+          $ref: objects.metadata.Manufacturer
+        ManufacturersModelName:
+          $ref: objects.metadata.ManufacturersModelName
+        DeviceSerialNumber:
+          $ref: objects.metadata.DeviceSerialNumber
+        SoftwareVersions:
+          $ref: objects.metadata.SoftwareVersions
+  - type: object
+    required:
+    - StimulatorID
+    recommended:
+    - Manufacturer
+    - ManufacturersModelName
+    properties:
+      StimulatorID:
+        $ref: objects.metadata.StimulatorID
+      Manufacturer:
+        $ref: objects.metadata.Manufacturer
+      ManufacturersModelName:
+        $ref: objects.metadata.ManufacturersModelName
+      DeviceSerialNumber:
+        $ref: objects.metadata.DeviceSerialNumber
+      SoftwareVersions:
+        $ref: objects.metadata.SoftwareVersions
+IntensitySet:
+  name: IntensitySet
+  display_name: Intensity set
+  description: 'Array describing each intensity reference named in the `intensity_reference` column.
+
+    `absolute` is a reserved value for directly specified intensities and needs no entry.
+
+    '
+  type: array
+  items:
+    type: object
+    required:
+    - IntensityID
+    - Value
+    - Units
+    recommended:
+    - Type
+    - Criterion
+    properties:
+      IntensityID:
+        $ref: objects.metadata.IntensityID
+      Value:
+        $ref: objects.metadata.Value
+      Units:
+        $ref: objects.metadata.Units
+      Type:
+        type: string
+        description: 'Reference endpoint of an intensity reference, for example `resting_motor`, `active_motor`,
+
+          `phosphene`, `sensation`, or `pain`.
+
+          '
+      Criterion:
+        $ref: objects.metadata.Criterion
+      Algorithm:
+        $ref: objects.metadata.Algorithm
+      MeasurementMethod:
+        $ref: objects.metadata.MeasurementMethod
+NavigationSystem:
+  name: NavigationSystem
+  display_name: Navigation system
+  description: 'Description of the navigation, tracking, or robotic positioning system.
+
+    RECOMMENDED whenever coordinates are given in `*_markers.tsv`.
+
+    '
+  type: object
+  required:
+  - Navigation
+  properties:
+    Navigation:
+      $ref: objects.metadata.Navigation
+    NavigationHardwareType:
+      $ref: objects.metadata.NavigationHardwareType
+    NavigationModelName:
+      $ref: objects.metadata.NavigationModelName
+    NavigationSoftwareVersion:
+      $ref: objects.metadata.NavigationSoftwareVersion
+    NavigationHardwareSerialNumber:
+      $ref: objects.metadata.NavigationHardwareSerialNumber
+    NavigationNotes:
+      $ref: objects.metadata.NavigationNotes
+NIBSCoordinateSystem:
+  name: NIBSCoordinateSystem
+  display_name: NIBS coordinate system
+  description: 'Coordinate system in which the positions in `*_markers.tsv` are expressed,
+
+    for example `IndividualMRI`, `MNI152NLin2009cAsym`, or `CapTrak`.
+
+    '
+  type: string
+NIBSCoordinateUnits:
+  name: NIBSCoordinateUnits
+  display_name: NIBS coordinate units
+  description: 'Units of the coordinates in `*_markers.tsv`, typically `mm`.
+
+    '
+  type: string
+NIBSCoordinateSystemDescription:
+  name: NIBSCoordinateSystemDescription
+  display_name: NIBS coordinate system description
+  description: 'How the coordinate system was defined, including the registration method and
+
+    what the coordinates represent.
+
+    '
+  type: string
+AnatomicalLandmarkCoordinatesDescription:
+  name: AnatomicalLandmarkCoordinatesDescription
+  display_name: Anatomical landmark coordinates description
+  description: 'Description of the anatomical landmarks, for example NAS for nasion and LPA and RPA
+
+    for the preauricular points.
+
+    '
+  type: string
+AnatomicalLandmarkRmsDeviation:
+  name: AnatomicalLandmarkRmsDeviation
+  display_name: Anatomical landmark RMS deviation
+  description: 'Per-landmark co-registration deviation values.
+
+    '
+  type: object
+  additionalProperties: &id001
+    type:
+    - array
+    - number
+    - string
+AnatomicalLandmarkRmsDeviationUnits:
+  name: AnatomicalLandmarkRmsDeviationUnits
+  display_name: Anatomical landmark RMS deviation units
+  description: 'Units of the anatomical landmark deviation values.
+
+    '
+  type: string
+AnatomicalLandmarkRmsDeviationDescription:
+  name: AnatomicalLandmarkRmsDeviationDescription
+  display_name: Anatomical landmark RMS deviation description
+  description: 'How the deviation was calculated and for which landmarks.
+
+    '
+  type: string
+HeadMeasurements:
+  name: HeadMeasurements
+  display_name: Head measurements
+  description: 'Head measurements taken with a tape from anatomical landmarks, used to locate elements
+
+    without coordinates.
+
+    Each value is a numeric array.
+
+    '
+  type: object
+  additionalProperties: *id001
+HeadMeasurementsUnits:
+  name: HeadMeasurementsUnits
+  display_name: Head measurements units
+  description: 'Units for all values in `HeadMeasurements`, for example `mm`.
+
+    '
+  type: string
+HeadMeasurementsDescription:
+  name: HeadMeasurementsDescription
+  display_name: Head measurements description
+  description: 'How the head measurements were obtained, including the landmarks used and any conventions.
+
+    '
+  type: string
+DigitizedHeadPointsNumber:
+  name: DigitizedHeadPointsNumber
+  display_name: Digitized head points number
+  description: 'Number of digitized head points used during co-registration.
+
+    '
+  type: number
+DigitizedHeadPointsDescription:
+  name: DigitizedHeadPointsDescription
+  display_name: Digitized head points description
+  description: 'Description of the digitized head points.
+
+    '
+  type: string
+DigitizedHeadPointsUnits:
+  name: DigitizedHeadPointsUnits
+  display_name: Digitized head points units
+  description: 'Units of the digitized head points.
+
+    '
+  type: string
+TransducerCoordinates:
+  name: TransducerCoordinates
+  display_name: Transducer coordinates
+  description: '(TUS) Spatial coordinates of the transducer, and optionally an affine transformation
+
+    describing its orientation.
+
+    '
+  type: object
+  additionalProperties: *id001
+TransducerCoordinateUnits:
+  name: TransducerCoordinateUnits
+  display_name: Transducer coordinate units
+  description: '(TUS) Units for the transducer coordinates.
+
+    '
+  type: string
+TransducerCoordinateSystemDescription:
+  name: TransducerCoordinateSystemDescription
+  display_name: Transducer coordinate system description
+  description: '(TUS) How the transducer coordinate system was defined and aligned with anatomy.
+
+    '
+  type: string
+TransducerCoordinatesDescription:
+  name: TransducerCoordinatesDescription
+  display_name: Transducer coordinates description
+  description: '(TUS) What the transducer coordinates represent, for example transducer centre,
+
+    entry point, or beam axis.
+
+    '
+  type: string
+TransducerRmsDeviation:
+  name: TransducerRmsDeviation
+  display_name: Transducer RMS deviation
+  description: '(TUS) Deviation of the transducer position or orientation from the planned placement.
+
+    '
+  type: number
+TransducerRmsDeviationUnits:
+  name: TransducerRmsDeviationUnits
+  display_name: Transducer RMS deviation units
+  description: '(TUS) Units for the transducer deviation.
+
+    '
+  type: string
+TransducerRmsDeviationDescription:
+  name: TransducerRmsDeviationDescription
+  display_name: Transducer RMS deviation description
+  description: '(TUS) How the transducer deviation was computed and by which method.
+
+    '
+  type: string

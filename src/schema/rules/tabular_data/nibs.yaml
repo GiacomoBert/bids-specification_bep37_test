@@ -1,26 +1,111 @@
 ---
-NibsTable:
+# Non-invasive brain stimulation (BEP037)
+NibsParameters:
   selectors:
     - datatype == "nibs"
     - suffix == "nibs"
     - extension == ".tsv"
   initial_columns:
-    - event_id
+    - nibs_event_id
     - nibs_type
   columns:
-    event_id: required
+    nibs_event_id: required
     nibs_type: required
-    stimulus_shape: required
-    stimulus_intensity: required
-    stimulus_duration: required
-    intensity_reference: recommended
-    intensity_scaling: recommended
-    stimulator_id: required
-    element_id: required
+    stimulator_id: recommended
+    nibs_element_id: recommended
+    stimulus_shape: recommended
+    stimulus_intensity: recommended
+    stimulus_duration: recommended
+    first_inflection: optional
+    current_direction: optional
+    ramp_up: optional
+    ramp_down: optional
+    frequency: optional
+    starting_phase: optional
+    offset: optional
+    noise_type: optional
+    frequency_low: optional
+    frequency_high: optional
+    distribution: optional
+    stimulus_description: optional
     pattern1_count: optional
-    pattern1_frequency: optional
     pattern1_interval: optional
+    pattern1_frequency: optional
+    pattern1_duration: optional
     pattern1_intensity: optional
+    pattern2_count: optional
+    pattern2_interval: optional
+    pattern2_frequency: optional
+    pattern2_duration: optional
+    pattern2_intensity: optional
+    pattern3_count: optional
+    pattern3_interval: optional
+    pattern3_frequency: optional
+    pattern3_duration: optional
+    pattern3_intensity: optional
+    pattern4_count: optional
+    pattern4_interval: optional
+    pattern4_frequency: optional
+    pattern4_duration: optional
+    pattern4_intensity: optional
+    intensity_reference: optional
+    intensity_scaling: optional
+    stimulus_count: optional
+    stimulus_validation: optional
+    subject_feedback: optional
+    status: optional
+    status_description: optional
+    timestamp: optional
+    electric_field_target: optional
+    electric_field_max: optional
+    electric_field_units: optional
+    electric_field_model_name: optional
+    electric_field_model_version: optional
+    contact_impedance: optional
+    measured_current_intensity: optional
+    measured_voltage_intensity: optional
+    current_statistics: optional
+    measured_peak_negative_pressure: optional
+    spatial_peak_pulse_average_intensity: optional
+    spatial_peak_temporal_average_intensity: optional
+    mechanical_index: optional
+    thermal_index: optional
+  additional_columns: allowed_if_defined
+
+NibsMarkers:
+  selectors:
+    - datatype == "nibs"
+    - suffix == "markers"
+    - extension == ".tsv"
+  initial_columns:
+    - nibs_position_id
+  columns:
+    nibs_position_id: required
+    nibs_element_id__markers: recommended
+    position_label: recommended
+    position_description: optional
+    position_group: optional
+    element_centre_x: recommended
+    element_centre_y: recommended
+    element_centre_z: recommended
+    element_xdir_x: optional
+    element_xdir_y: optional
+    element_xdir_z: optional
+    element_ydir_x: optional
+    element_ydir_y: optional
+    element_ydir_z: optional
+    element_zdir_x: optional
+    element_zdir_y: optional
+    element_zdir_z: optional
+    element_distance: recommended
+    target_x: optional
+    target_y: optional
+    target_z: optional
+    target_label: optional
+    peeling_depth: optional
+    efield_max_x: optional
+    efield_max_y: optional
+    efield_max_z: optional
   additional_columns: allowed_if_defined
 
 NibsEvents:
@@ -28,11 +113,7 @@ NibsEvents:
     - datatype == "nibs"
     - suffix == "events"
     - extension == ".tsv"
-  initial_columns:
-    - onset
-    - duration
   columns:
-    onset: required
-    duration: required
-    event_id: required
-  additional_columns: allowed_if_defined
+    nibs_event_id__events: required
+    nibs_position_id__events: optional
+  additional_columns: allowed

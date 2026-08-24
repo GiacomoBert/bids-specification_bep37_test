@@ -132,10 +132,28 @@ atlas_description:
 
 nibs:
   selectors:
-    - datatype == "nibs"
     - suffix == "events"
     - extension == ".tsv"
   target:
     suffix: nibs
     extension: .tsv
+  inherit: true
+
+nibs_markers:
+  selectors:
+    - suffix == "events"
+    - extension == ".tsv"
+  target:
+    suffix: markers
+    extension: .tsv
+  inherit: true
+
+nibs_coordsystem:
+  selectors:
+  - datatype == "nibs"
+  - suffix == "markers"
+  - extension == ".tsv"
+  target:
+    suffix: coordsystem
+    extension: .json
   inherit: true

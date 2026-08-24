@@ -901,5 +901,6 @@ unloc:
 nibs:
   value: nibs
   display_name: Non-invasive brain stimulation
-  description: |
-    Table of unique stimulation parameter sets applied in a run.
+  description: 'Table of unique stimulation parameter sets, one row per parameter set.
+
+    '

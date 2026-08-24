@@ -1,4 +1,5 @@
 ---
+# Non-invasive brain stimulation (BEP037)
 nibs:
   $ref: meta.templates.raw.task
   suffixes:
@@ -8,3 +9,50 @@ nibs:
     - .json
   datatypes:
     - nibs
+
+markers__nibs:
+  $ref: meta.templates.raw.task
+  suffixes:
+    - markers
+  extensions:
+    - .tsv
+    - .json
+  datatypes:
+    - nibs
+
+coordsystem__nibs:
+  $ref: meta.templates.raw.task
+  suffixes:
+    - coordsystem
+  extensions:
+    - .json
+  datatypes:
+    - nibs
+
+headshape__nibs:
+  suffixes:
+  - headshape
+  extensions:
+  - .*
+  - .pos
+  datatypes:
+  - nibs
+  entities:
+    subject: required
+    session: optional
+    task: optional
+    acquisition: optional
+photo__nibs:
+  suffixes:
+  - photo
+  extensions:
+  - .jpg
+  - .png
+  - .tif
+  datatypes:
+  - nibs
+  entities:
+    subject: required
+    session: optional
+    task: optional
+    acquisition: optional

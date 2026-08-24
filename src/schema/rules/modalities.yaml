@@ -39,4 +39,4 @@ mrs:
     - mrs
 nibs:
   datatypes:
-    - nibs
+  - nibs

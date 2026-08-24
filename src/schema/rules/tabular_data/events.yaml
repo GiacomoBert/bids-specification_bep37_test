@@ -14,6 +14,16 @@ Events:
       description_addendum: |
         Note that this column only applies to data types where
         channels are specified, such as EEG, iEEG, MEG or NIRS.
+    nibs_event_id__events:
+      level: optional
+      description_addendum: |
+        Note that this column only applies when non-invasive brain stimulation
+        was delivered, and references a row of the associated `*_nibs.tsv`.
+    nibs_position_id__events:
+      level: optional
+      description_addendum: |
+        Note that this column only applies when non-invasive brain stimulation
+        was delivered, and references rows of the associated `*_markers.tsv`.
   additional_columns: allowed
   initial_columns:
     - onset

@@ -151,8 +151,31 @@ properties:
           path:
             description: Path to associated nibs file
             type: string
-          event_id:
-            description: Contents of the event_id column
+          nibs_event_id:
+            description: Contents of the nibs_event_id column
+            type: array
+            items:
+              type: string
+      nibs_coordsystem:
+        description: 'NIBS coordinate system file'
+        type: object
+        required: [path]
+        additionalProperties: false
+        properties:
+          path:
+            description: Path to associated coordsystem file
+            type: string
+      nibs_markers:
+        description: 'NIBS marker table'
+        type: object
+        required: [path]
+        additionalProperties: false
+        properties:
+          path:
+            description: Path to associated markers file
+            type: string
+          nibs_position_id:
+            description: Contents of the nibs_position_id column
             type: array
             items:
               type: string

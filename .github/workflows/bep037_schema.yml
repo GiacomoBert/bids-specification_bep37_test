@@ -1,0 +1,66 @@
+---
+# BEP037: rebuild the NIBS-aware schema on every change to src/schema and commit it
+# to the branch, so that `schema_nibs.json` always has a current, stable raw URL:
+#
+#   https://raw.githubusercontent.com/<owner>/<repo>/bep037-nibs/schema_nibs.json
+#
+# raw.githubusercontent.com sends `access-control-allow-origin: *`, so the BIDS
+# validator web app can load it directly from a browser.
+name: BEP037 schema
+
+on:
+  push:
+    branches: [bep037-nibs]
+    paths:
+      - 'src/schema/**'
+      - 'tools/schemacode/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bep037-schema
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: bep037-nibs
+      - uses: actions/setup-python@v6.2.0
+        with:
+          python-version: 3
+      - name: Install bidsschematools
+        run: |
+          pip install --upgrade tools/schemacode
+          git clean -fxd tools/schemacode
+      - name: Export the schema
+        run: bst export --schema src/schema --output schema_nibs.json
+      - name: Sanity check
+        run: |
+          python -c "
+          import json, sys
+          d = json.load(open('schema_nibs.json'))
+          assert 'nibs' in d['objects']['datatypes'], 'nibs datatype missing'
+          assert d['rules']['checks']['nibs'], 'nibs checks missing'
+          print('schema_version', d['schema_version'])
+          print('nibs checks:', len(d['rules']['checks']['nibs']))
+          "
+      - name: Commit if changed
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add schema_nibs.json
+          if git diff --staged --quiet; then
+            echo 'schema unchanged'
+          else
+            git commit -m 'build: refresh schema_nibs.json [skip ci]'
+            git push
+          fi

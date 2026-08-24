@@ -79,5 +79,10 @@ nirs:
 nibs:
   value: nibs
   display_name: Non-Invasive Brain Stimulation
-  description: |
-    Applied non-invasive brain stimulation (TMS, tES, TUS, PNS).
+  description: 'Applied non-invasive brain stimulation, covering transcranial magnetic stimulation,
+
+    transcranial electrical stimulation, transcranial ultrasound stimulation, and
+
+    peripheral nerve stimulation.
+
+    '

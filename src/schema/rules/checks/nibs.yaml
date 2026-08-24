@@ -1,68 +1,1073 @@
 ---
-NibsTypeConsistent:
+# Non-invasive brain stimulation (BEP037)
+NibsEventIdUnique:
   issue:
-    code: NIBS_TYPE_MISSING
+    code: NIBS_EVENT_ID_NOT_UNIQUE
     message: |
-      Every row of *_nibs.tsv must declare a nibs_type.
+      `nibs_event_id` MUST be unique within a `*_nibs.tsv` file.
+      Each row defines one stimulation parameter set.
     level: error
   selectors:
     - datatype == "nibs"
     - suffix == "nibs"
     - extension == ".tsv"
   checks:
-    - intersects(columns.nibs_type, ["TMS", "tES", "TUS", "PNS"])
+    - length(unique(columns.nibs_event_id)) == length(columns.nibs_event_id)
 
-TESIntensitySumsToZero:
+NibsPositionIdUnique:
+  issue:
+    code: NIBS_POSITION_ID_NOT_UNIQUE
+    message: |
+      `nibs_position_id` MUST be unique within a `*_markers.tsv` file.
+      Each row describes one element placement.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "markers"
+    - extension == ".tsv"
+  checks:
+    - length(unique(columns.nibs_position_id)) == length(columns.nibs_position_id)
+
+NibsEventIdResolves:
+  issue:
+    code: NIBS_EVENT_ID_UNRESOLVED
+    message: |
+      Every `nibs_event_id` in a `*_events.tsv` file MUST match a row of the associated
+      `*_nibs.tsv`.
+    level: error
+  selectors:
+    - suffix == "events"
+    - extension == ".tsv"
+    - '"nibs" in associations'
+    - columns.nibs_event_id != null
+  checks:
+    - subset(without(columns.nibs_event_id, "n/a"), associations.nibs.nibs_event_id)
+
+NibsPositionIdResolves:
+  issue:
+    code: NIBS_POSITION_ID_UNRESOLVED
+    message: |
+      Every `nibs_position_id` in a `*_events.tsv` file MUST match a row of the associated
+      `*_markers.tsv`.
+    level: error
+  selectors:
+    - suffix == "events"
+    - extension == ".tsv"
+    - '"nibs_markers" in associations'
+    - columns.nibs_position_id != null
+  checks:
+    - subset(without(flatten(split(columns.nibs_position_id, "|")), "n/a"), associations.nibs_markers.nibs_position_id)
+
+NibsElementIdDefined:
+  issue:
+    code: NIBS_ELEMENT_ID_UNDEFINED
+    message: |
+      Every `nibs_element_id` used in `*_nibs.tsv` MUST correspond to an `ElementID`
+      of an `ElementSet` entry in `*_nibs.json`.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.nibs_element_id != null
+    - type(sidecar.ElementSet) == "array"
+  checks:
+    - subset(without(flatten(split(columns.nibs_element_id, "|")), "n/a"), pluck(sidecar.ElementSet, "ElementID"))
+
+NibsIntensityReferenceDefined:
+  issue:
+    code: NIBS_INTENSITY_REFERENCE_UNDEFINED
+    message: |
+      Every `intensity_reference` other than the reserved value `absolute` MUST correspond
+      to an `IntensityID` of an `IntensitySet` entry in `*_nibs.json`.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.intensity_reference != null
+    - type(sidecar.IntensitySet) == "array"
+  checks:
+    - subset(without(flatten(split(columns.intensity_reference, "|")), "absolute", "n/a"), pluck(sidecar.IntensitySet, "IntensityID"))
+
+NibsTESIntensitySumsToZero:
   issue:
     code: NIBS_TES_INTENSITY_SUM
     message: |
-      For tES, the `|`-delimited intensities across elements in a row must sum to zero.
+      For `tES`, the `|`-delimited `stimulus_intensity` values across simultaneous elements
+      MUST sum to 0.
     level: error
   selectors:
     - datatype == "nibs"
     - suffix == "nibs"
     - extension == ".tsv"
     - intersects(columns.nibs_type, ["tES"])
+    - columns.stimulus_intensity != null
   checks:
-    - allequal(round(sum(split(filter(columns.stimulus_intensity, columns.nibs_type, "tES"), "|")), 6), 0)
+    - allequal(round(sum(split(without(filter(columns.stimulus_intensity, columns.nibs_type, "tES"), "n/a"), "|")), 6), 0)
 
-Pattern1IntensityLength:
+NibsCustomShapeDescribed:
+  issue:
+    code: NIBS_CUSTOM_SHAPE_UNDESCRIBED
+    message: |
+      A `stimulus_shape` of `Custom` requires a free-text `stimulus_description`.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - intersects(columns.stimulus_shape, ["Custom"])
+  checks:
+    - length(without(filter(columns.stimulus_description, columns.stimulus_shape, "Custom"), "n/a")) == count(columns.stimulus_shape, "Custom")
+
+NibsPattern1IntensityLength:
   issue:
     code: NIBS_PATTERN1_INTENSITY_LENGTH
     message: |
-      The number of `|`-delimited values in pattern1_intensity must equal pattern1_count.
+      The number of `|`-delimited values in `pattern1_intensity` MUST equal `pattern1_count`.
     level: error
   selectors:
     - datatype == "nibs"
     - suffix == "nibs"
     - extension == ".tsv"
+    - columns.pattern1_intensity != null
+    - columns.pattern1_count != null
   checks:
     - allequal(lengths(split(filter(columns.pattern1_intensity, columns.pattern1_intensity, "n/a", true), "|")), number(filter(columns.pattern1_count, columns.pattern1_intensity, "n/a", true)))
 
-EventIdResolves:
+NibsPattern2IntensityLength:
   issue:
-    code: NIBS_EVENT_ID_UNRESOLVED
+    code: NIBS_PATTERN2_INTENSITY_LENGTH
     message: |
-      Every event_id in *_events.tsv must match a row of the associated *_nibs.tsv.
-    level: error
-  selectors:
-    - datatype == "nibs"
-    - suffix == "events"
-    - extension == ".tsv"
-    - '"nibs" in associations'
-  checks:
-    - subset(columns.event_id, associations.nibs.event_id)
-
-ElementIdDefined:
-  issue:
-    code: NIBS_ELEMENT_ID_UNDEFINED
-    message: |
-      Every element_id used in *_nibs.tsv must be a key of ElementSet in the sidecar.
+      The number of `|`-delimited values in `pattern2_intensity` MUST equal `pattern2_count`.
     level: error
   selectors:
     - datatype == "nibs"
     - suffix == "nibs"
     - extension == ".tsv"
-    - sidecar.ElementSet != null
+    - columns.pattern2_intensity != null
+    - columns.pattern2_count != null
   checks:
-    - subset(flatten(split(columns.element_id, "|")), keys(sidecar.ElementSet))
+    - allequal(lengths(split(filter(columns.pattern2_intensity, columns.pattern2_intensity, "n/a", true), "|")), number(filter(columns.pattern2_count, columns.pattern2_intensity, "n/a", true)))
+
+NibsPattern3IntensityLength:
+  issue:
+    code: NIBS_PATTERN3_INTENSITY_LENGTH
+    message: |
+      The number of `|`-delimited values in `pattern3_intensity` MUST equal `pattern3_count`.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern3_intensity != null
+    - columns.pattern3_count != null
+  checks:
+    - allequal(lengths(split(filter(columns.pattern3_intensity, columns.pattern3_intensity, "n/a", true), "|")), number(filter(columns.pattern3_count, columns.pattern3_intensity, "n/a", true)))
+
+NibsPattern4IntensityLength:
+  issue:
+    code: NIBS_PATTERN4_INTENSITY_LENGTH
+    message: |
+      The number of `|`-delimited values in `pattern4_intensity` MUST equal `pattern4_count`.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern4_intensity != null
+    - columns.pattern4_count != null
+  checks:
+    - allequal(lengths(split(filter(columns.pattern4_intensity, columns.pattern4_intensity, "n/a", true), "|")), number(filter(columns.pattern4_count, columns.pattern4_intensity, "n/a", true)))
+
+NibsDelimiterDeclaredNibsElementId:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `nibs_element_id` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.nibs_element_id != null
+  checks:
+    - max(lengths(split(columns.nibs_element_id, "|"))) == 1 || (sidecar.nibs_element_id != null && sidecar.nibs_element_id.Delimiter == "|")
+
+NibsDelimiterDeclaredStimulusIntensity:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `stimulus_intensity` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.stimulus_intensity != null
+  checks:
+    - max(lengths(split(columns.stimulus_intensity, "|"))) == 1 || (sidecar.stimulus_intensity != null && sidecar.stimulus_intensity.Delimiter == "|")
+
+NibsDelimiterDeclaredIntensityReference:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `intensity_reference` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.intensity_reference != null
+  checks:
+    - max(lengths(split(columns.intensity_reference, "|"))) == 1 || (sidecar.intensity_reference != null && sidecar.intensity_reference.Delimiter == "|")
+
+NibsDelimiterDeclaredIntensityScaling:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `intensity_scaling` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.intensity_scaling != null
+  checks:
+    - max(lengths(split(columns.intensity_scaling, "|"))) == 1 || (sidecar.intensity_scaling != null && sidecar.intensity_scaling.Delimiter == "|")
+
+NibsDelimiterDeclaredCurrentDirection:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `current_direction` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.current_direction != null
+  checks:
+    - max(lengths(split(columns.current_direction, "|"))) == 1 || (sidecar.current_direction != null && sidecar.current_direction.Delimiter == "|")
+
+NibsDelimiterDeclaredStartingPhase:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `starting_phase` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.starting_phase != null
+  checks:
+    - max(lengths(split(columns.starting_phase, "|"))) == 1 || (sidecar.starting_phase != null && sidecar.starting_phase.Delimiter == "|")
+
+NibsDelimiterDeclaredContactImpedance:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `contact_impedance` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.contact_impedance != null
+  checks:
+    - max(lengths(split(columns.contact_impedance, "|"))) == 1 || (sidecar.contact_impedance != null && sidecar.contact_impedance.Delimiter == "|")
+
+NibsDelimiterDeclaredPattern1Intensity:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `pattern1_intensity` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern1_intensity != null
+  checks:
+    - max(lengths(split(columns.pattern1_intensity, "|"))) == 1 || (sidecar.pattern1_intensity != null && sidecar.pattern1_intensity.Delimiter == "|")
+
+NibsDelimiterDeclaredPattern2Intensity:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `pattern2_intensity` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern2_intensity != null
+  checks:
+    - max(lengths(split(columns.pattern2_intensity, "|"))) == 1 || (sidecar.pattern2_intensity != null && sidecar.pattern2_intensity.Delimiter == "|")
+
+NibsDelimiterDeclaredPattern3Intensity:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `pattern3_intensity` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern3_intensity != null
+  checks:
+    - max(lengths(split(columns.pattern3_intensity, "|"))) == 1 || (sidecar.pattern3_intensity != null && sidecar.pattern3_intensity.Delimiter == "|")
+
+NibsDelimiterDeclaredPattern4Intensity:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `pattern4_intensity` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern4_intensity != null
+  checks:
+    - max(lengths(split(columns.pattern4_intensity, "|"))) == 1 || (sidecar.pattern4_intensity != null && sidecar.pattern4_intensity.Delimiter == "|")
+
+NibsDelimiterDeclaredNibsPositionIdEvents:
+  issue:
+    code: NIBS_DELIMITER_NOT_DECLARED
+    message: |
+      `nibs_position_id` uses the `|` delimiter, so the delimiter MUST be declared for that column
+      in the corresponding JSON sidecar, as a `Delimiter` entry for that column.
+    level: error
+  selectors:
+    - suffix == "events"
+    - extension == ".tsv"
+    - columns.nibs_position_id != null
+  checks:
+    - max(lengths(split(columns.nibs_position_id, "|"))) == 1 || (sidecar.nibs_position_id != null && sidecar.nibs_position_id.Delimiter == "|")
+
+NibsUnitsDeclaredStimulusIntensity:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `stimulus_intensity` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.stimulus_intensity != null
+  checks:
+    - sidecar.stimulus_intensity != null && sidecar.stimulus_intensity.Units != null
+
+NibsUnitsDeclaredStimulusDuration:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `stimulus_duration` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.stimulus_duration != null
+  checks:
+    - sidecar.stimulus_duration != null && sidecar.stimulus_duration.Units != null
+
+NibsUnitsDeclaredRampUp:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `ramp_up` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.ramp_up != null
+  checks:
+    - sidecar.ramp_up != null && sidecar.ramp_up.Units != null
+
+NibsUnitsDeclaredRampDown:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `ramp_down` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.ramp_down != null
+  checks:
+    - sidecar.ramp_down != null && sidecar.ramp_down.Units != null
+
+NibsUnitsDeclaredFrequency:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `frequency` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.frequency != null
+  checks:
+    - sidecar.frequency != null && sidecar.frequency.Units != null
+
+NibsUnitsDeclaredStartingPhase:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `starting_phase` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.starting_phase != null
+  checks:
+    - sidecar.starting_phase != null && sidecar.starting_phase.Units != null
+
+NibsUnitsDeclaredOffset:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `offset` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.offset != null
+  checks:
+    - sidecar.offset != null && sidecar.offset.Units != null
+
+NibsUnitsDeclaredFrequencyLow:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `frequency_low` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.frequency_low != null
+  checks:
+    - sidecar.frequency_low != null && sidecar.frequency_low.Units != null
+
+NibsUnitsDeclaredFrequencyHigh:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `frequency_high` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.frequency_high != null
+  checks:
+    - sidecar.frequency_high != null && sidecar.frequency_high.Units != null
+
+NibsUnitsDeclaredContactImpedance:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `contact_impedance` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.contact_impedance != null
+  checks:
+    - sidecar.contact_impedance != null && sidecar.contact_impedance.Units != null
+
+NibsUnitsDeclaredElectricFieldTarget:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `electric_field_target` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.electric_field_target != null
+  checks:
+    - sidecar.electric_field_target != null && sidecar.electric_field_target.Units != null
+
+NibsUnitsDeclaredElectricFieldMax:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `electric_field_max` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.electric_field_max != null
+  checks:
+    - sidecar.electric_field_max != null && sidecar.electric_field_max.Units != null
+
+NibsUnitsDeclaredMeasuredCurrentIntensity:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `measured_current_intensity` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.measured_current_intensity != null
+  checks:
+    - sidecar.measured_current_intensity != null && sidecar.measured_current_intensity.Units != null
+
+NibsUnitsDeclaredMeasuredVoltageIntensity:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `measured_voltage_intensity` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.measured_voltage_intensity != null
+  checks:
+    - sidecar.measured_voltage_intensity != null && sidecar.measured_voltage_intensity.Units != null
+
+NibsUnitsDeclaredMeasuredPeakNegativePressure:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `measured_peak_negative_pressure` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.measured_peak_negative_pressure != null
+  checks:
+    - sidecar.measured_peak_negative_pressure != null && sidecar.measured_peak_negative_pressure.Units != null
+
+NibsUnitsDeclaredSpatialPeakPulseAverageIntensity:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `spatial_peak_pulse_average_intensity` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.spatial_peak_pulse_average_intensity != null
+  checks:
+    - sidecar.spatial_peak_pulse_average_intensity != null && sidecar.spatial_peak_pulse_average_intensity.Units != null
+
+NibsUnitsDeclaredSpatialPeakTemporalAverageIntensity:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `spatial_peak_temporal_average_intensity` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.spatial_peak_temporal_average_intensity != null
+  checks:
+    - sidecar.spatial_peak_temporal_average_intensity != null && sidecar.spatial_peak_temporal_average_intensity.Units != null
+
+NibsUnitsDeclaredPattern1Interval:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern1_interval` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern1_interval != null
+  checks:
+    - sidecar.pattern1_interval != null && sidecar.pattern1_interval.Units != null
+
+NibsUnitsDeclaredPattern1Frequency:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern1_frequency` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern1_frequency != null
+  checks:
+    - sidecar.pattern1_frequency != null && sidecar.pattern1_frequency.Units != null
+
+NibsUnitsDeclaredPattern1Duration:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern1_duration` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern1_duration != null
+  checks:
+    - sidecar.pattern1_duration != null && sidecar.pattern1_duration.Units != null
+
+NibsUnitsDeclaredPattern1Intensity:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern1_intensity` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern1_intensity != null
+  checks:
+    - sidecar.pattern1_intensity != null && sidecar.pattern1_intensity.Units != null
+
+NibsUnitsDeclaredPattern2Interval:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern2_interval` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern2_interval != null
+  checks:
+    - sidecar.pattern2_interval != null && sidecar.pattern2_interval.Units != null
+
+NibsUnitsDeclaredPattern2Frequency:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern2_frequency` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern2_frequency != null
+  checks:
+    - sidecar.pattern2_frequency != null && sidecar.pattern2_frequency.Units != null
+
+NibsUnitsDeclaredPattern2Duration:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern2_duration` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern2_duration != null
+  checks:
+    - sidecar.pattern2_duration != null && sidecar.pattern2_duration.Units != null
+
+NibsUnitsDeclaredPattern2Intensity:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern2_intensity` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern2_intensity != null
+  checks:
+    - sidecar.pattern2_intensity != null && sidecar.pattern2_intensity.Units != null
+
+NibsUnitsDeclaredPattern3Interval:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern3_interval` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern3_interval != null
+  checks:
+    - sidecar.pattern3_interval != null && sidecar.pattern3_interval.Units != null
+
+NibsUnitsDeclaredPattern3Frequency:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern3_frequency` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern3_frequency != null
+  checks:
+    - sidecar.pattern3_frequency != null && sidecar.pattern3_frequency.Units != null
+
+NibsUnitsDeclaredPattern3Duration:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern3_duration` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern3_duration != null
+  checks:
+    - sidecar.pattern3_duration != null && sidecar.pattern3_duration.Units != null
+
+NibsUnitsDeclaredPattern3Intensity:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern3_intensity` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern3_intensity != null
+  checks:
+    - sidecar.pattern3_intensity != null && sidecar.pattern3_intensity.Units != null
+
+NibsUnitsDeclaredPattern4Interval:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern4_interval` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern4_interval != null
+  checks:
+    - sidecar.pattern4_interval != null && sidecar.pattern4_interval.Units != null
+
+NibsUnitsDeclaredPattern4Frequency:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern4_frequency` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern4_frequency != null
+  checks:
+    - sidecar.pattern4_frequency != null && sidecar.pattern4_frequency.Units != null
+
+NibsUnitsDeclaredPattern4Duration:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern4_duration` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern4_duration != null
+  checks:
+    - sidecar.pattern4_duration != null && sidecar.pattern4_duration.Units != null
+
+NibsUnitsDeclaredPattern4Intensity:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `pattern4_intensity` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern4_intensity != null
+  checks:
+    - sidecar.pattern4_intensity != null && sidecar.pattern4_intensity.Units != null
+
+NibsUnitsDeclaredElementDistance:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `element_distance` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "markers"
+    - extension == ".tsv"
+    - columns.element_distance != null
+  checks:
+    - sidecar.element_distance != null && sidecar.element_distance.Units != null
+
+NibsUnitsDeclaredPeelingDepth:
+  issue:
+    code: NIBS_UNITS_NOT_DECLARED
+    message: |
+      Units for every numeric column MUST be declared in the JSON sidecar.
+      `peeling_depth` has no `Units` entry.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "markers"
+    - extension == ".tsv"
+    - columns.peeling_depth != null
+  checks:
+    - sidecar.peeling_depth != null && sidecar.peeling_depth.Units != null
+
+NibsPattern1LayerRate:
+  issue:
+    code: NIBS_PATTERN1_RATE_MISSING
+    message: |
+      A pattern layer SHOULD provide `pattern1_count` together with one of
+      `pattern1_interval` or `pattern1_frequency`, from which the duration is derivable.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern1_count != null
+  checks:
+    - columns.pattern1_interval != null || columns.pattern1_frequency != null
+    - columns.pattern1_frequency != null || count(filter(columns.pattern1_interval, columns.pattern1_count, "n/a", true), "n/a") == 0
+    - columns.pattern1_interval != null || count(filter(columns.pattern1_frequency, columns.pattern1_count, "n/a", true), "n/a") == 0
+    - columns.pattern1_interval == null || columns.pattern1_frequency == null || count(filter(filter(columns.pattern1_frequency, columns.pattern1_count, "n/a", true), filter(columns.pattern1_interval, columns.pattern1_count, "n/a", true), "n/a"), "n/a") == 0
+
+NibsPattern2LayerRate:
+  issue:
+    code: NIBS_PATTERN2_RATE_MISSING
+    message: |
+      A pattern layer SHOULD provide `pattern2_count` together with one of
+      `pattern2_interval` or `pattern2_frequency`, from which the duration is derivable.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern2_count != null
+  checks:
+    - columns.pattern2_interval != null || columns.pattern2_frequency != null
+    - columns.pattern2_frequency != null || count(filter(columns.pattern2_interval, columns.pattern2_count, "n/a", true), "n/a") == 0
+    - columns.pattern2_interval != null || count(filter(columns.pattern2_frequency, columns.pattern2_count, "n/a", true), "n/a") == 0
+    - columns.pattern2_interval == null || columns.pattern2_frequency == null || count(filter(filter(columns.pattern2_frequency, columns.pattern2_count, "n/a", true), filter(columns.pattern2_interval, columns.pattern2_count, "n/a", true), "n/a"), "n/a") == 0
+
+NibsPattern3LayerRate:
+  issue:
+    code: NIBS_PATTERN3_RATE_MISSING
+    message: |
+      A pattern layer SHOULD provide `pattern3_count` together with one of
+      `pattern3_interval` or `pattern3_frequency`, from which the duration is derivable.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern3_count != null
+  checks:
+    - columns.pattern3_interval != null || columns.pattern3_frequency != null
+    - columns.pattern3_frequency != null || count(filter(columns.pattern3_interval, columns.pattern3_count, "n/a", true), "n/a") == 0
+    - columns.pattern3_interval != null || count(filter(columns.pattern3_frequency, columns.pattern3_count, "n/a", true), "n/a") == 0
+    - columns.pattern3_interval == null || columns.pattern3_frequency == null || count(filter(filter(columns.pattern3_frequency, columns.pattern3_count, "n/a", true), filter(columns.pattern3_interval, columns.pattern3_count, "n/a", true), "n/a"), "n/a") == 0
+
+NibsPattern4LayerRate:
+  issue:
+    code: NIBS_PATTERN4_RATE_MISSING
+    message: |
+      A pattern layer SHOULD provide `pattern4_count` together with one of
+      `pattern4_interval` or `pattern4_frequency`, from which the duration is derivable.
+    level: warning
+  selectors:
+    - datatype == "nibs"
+    - suffix == "nibs"
+    - extension == ".tsv"
+    - columns.pattern4_count != null
+  checks:
+    - columns.pattern4_interval != null || columns.pattern4_frequency != null
+    - columns.pattern4_frequency != null || count(filter(columns.pattern4_interval, columns.pattern4_count, "n/a", true), "n/a") == 0
+    - columns.pattern4_interval != null || count(filter(columns.pattern4_frequency, columns.pattern4_count, "n/a", true), "n/a") == 0
+    - columns.pattern4_interval == null || columns.pattern4_frequency == null || count(filter(filter(columns.pattern4_frequency, columns.pattern4_count, "n/a", true), filter(columns.pattern4_interval, columns.pattern4_count, "n/a", true), "n/a"), "n/a") == 0
+
+NibsPoseUnitVectorX:
+  issue:
+    code: NIBS_POSE_NOT_UNIT_VECTOR
+    message: |
+      The element `x` axis MUST be a unit vector.
+      The three `element_xdir_*` components of a row must give a length of 1.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "markers"
+    - extension == ".tsv"
+    - columns.element_xdir_x != null
+    - columns.element_ydir_x != null
+    - columns.element_zdir_x != null
+  checks:
+    - allequal(round(sum(zip(times(filter(columns.element_xdir_x, columns.element_xdir_x, "n/a", true), filter(columns.element_xdir_x, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_xdir_y, columns.element_xdir_x, "n/a", true), filter(columns.element_xdir_y, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_xdir_z, columns.element_xdir_x, "n/a", true), filter(columns.element_xdir_z, columns.element_xdir_x, "n/a", true)))), 3), 1)
+
+NibsPoseUnitVectorY:
+  issue:
+    code: NIBS_POSE_NOT_UNIT_VECTOR
+    message: |
+      The element `y` axis MUST be a unit vector.
+      The three `element_ydir_*` components of a row must give a length of 1.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "markers"
+    - extension == ".tsv"
+    - columns.element_xdir_x != null
+    - columns.element_ydir_x != null
+    - columns.element_zdir_x != null
+  checks:
+    - allequal(round(sum(zip(times(filter(columns.element_ydir_x, columns.element_xdir_x, "n/a", true), filter(columns.element_ydir_x, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_ydir_y, columns.element_xdir_x, "n/a", true), filter(columns.element_ydir_y, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_ydir_z, columns.element_xdir_x, "n/a", true), filter(columns.element_ydir_z, columns.element_xdir_x, "n/a", true)))), 3), 1)
+
+NibsPoseUnitVectorZ:
+  issue:
+    code: NIBS_POSE_NOT_UNIT_VECTOR
+    message: |
+      The element `z` axis MUST be a unit vector.
+      The three `element_zdir_*` components of a row must give a length of 1.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "markers"
+    - extension == ".tsv"
+    - columns.element_xdir_x != null
+    - columns.element_ydir_x != null
+    - columns.element_zdir_x != null
+  checks:
+    - allequal(round(sum(zip(times(filter(columns.element_zdir_x, columns.element_xdir_x, "n/a", true), filter(columns.element_zdir_x, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_zdir_y, columns.element_xdir_x, "n/a", true), filter(columns.element_zdir_y, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_zdir_z, columns.element_xdir_x, "n/a", true), filter(columns.element_zdir_z, columns.element_xdir_x, "n/a", true)))), 3), 1)
+
+NibsPoseOrthogonalXY:
+  issue:
+    code: NIBS_POSE_NOT_ORTHOGONAL
+    message: |
+      The element `x` and `y` axes MUST be mutually orthogonal.
+      Their dot product must be 0.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "markers"
+    - extension == ".tsv"
+    - columns.element_xdir_x != null
+    - columns.element_ydir_x != null
+    - columns.element_zdir_x != null
+  checks:
+    - allequal(round(sum(zip(times(filter(columns.element_xdir_x, columns.element_xdir_x, "n/a", true), filter(columns.element_ydir_x, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_xdir_y, columns.element_xdir_x, "n/a", true), filter(columns.element_ydir_y, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_xdir_z, columns.element_xdir_x, "n/a", true), filter(columns.element_ydir_z, columns.element_xdir_x, "n/a", true)))), 3), 0)
+
+NibsPoseOrthogonalXZ:
+  issue:
+    code: NIBS_POSE_NOT_ORTHOGONAL
+    message: |
+      The element `x` and `z` axes MUST be mutually orthogonal.
+      Their dot product must be 0.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "markers"
+    - extension == ".tsv"
+    - columns.element_xdir_x != null
+    - columns.element_ydir_x != null
+    - columns.element_zdir_x != null
+  checks:
+    - allequal(round(sum(zip(times(filter(columns.element_xdir_x, columns.element_xdir_x, "n/a", true), filter(columns.element_zdir_x, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_xdir_y, columns.element_xdir_x, "n/a", true), filter(columns.element_zdir_y, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_xdir_z, columns.element_xdir_x, "n/a", true), filter(columns.element_zdir_z, columns.element_xdir_x, "n/a", true)))), 3), 0)
+
+NibsPoseOrthogonalYZ:
+  issue:
+    code: NIBS_POSE_NOT_ORTHOGONAL
+    message: |
+      The element `y` and `z` axes MUST be mutually orthogonal.
+      Their dot product must be 0.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "markers"
+    - extension == ".tsv"
+    - columns.element_xdir_x != null
+    - columns.element_ydir_x != null
+    - columns.element_zdir_x != null
+  checks:
+    - allequal(round(sum(zip(times(filter(columns.element_ydir_x, columns.element_xdir_x, "n/a", true), filter(columns.element_zdir_x, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_ydir_y, columns.element_xdir_x, "n/a", true), filter(columns.element_zdir_y, columns.element_xdir_x, "n/a", true)), times(filter(columns.element_ydir_z, columns.element_xdir_x, "n/a", true), filter(columns.element_zdir_z, columns.element_xdir_x, "n/a", true)))), 3), 0)
+
+NibsCoordsystemPresent:
+  issue:
+    code: NIBS_COORDSYSTEM_MISSING
+    message: |
+      A `*_coordsystem.json` is REQUIRED whenever `*_markers.tsv` contains coordinates.
+    level: error
+  selectors:
+    - datatype == "nibs"
+    - suffix == "markers"
+    - extension == ".tsv"
+    - columns.element_centre_x != null
+  checks:
+    - '"nibs_coordsystem" in associations'
