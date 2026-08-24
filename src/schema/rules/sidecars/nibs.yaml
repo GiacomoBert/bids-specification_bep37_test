@@ -11,7 +11,6 @@ NibsSidecar:
     StimulatorSet: recommended
     ElementSet: recommended
     IntensitySet: optional
-    NavigationSystem: optional
     TaskName: optional
     TaskDescription: optional
     Instructions: optional
@@ -32,8 +31,7 @@ NibsMarkersSidecar:
   selectors:
     - datatype == "nibs"
     - suffix == "markers"
-  fields:
-    NavigationSystem: optional
+  fields: {}
 
 NibsCoordsystem:
   selectors:
@@ -43,6 +41,7 @@ NibsCoordsystem:
     NIBSCoordinateSystem: required
     NIBSCoordinateUnits: required
     NIBSCoordinateSystemDescription: recommended
+    NavigationSystem: optional
     IntendedFor: recommended
     FiducialsDescription: optional
     FiducialsCoordinates: optional

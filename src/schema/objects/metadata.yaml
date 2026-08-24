@@ -5122,36 +5122,14 @@ ElementSet:
 StimulatorSet:
   name: StimulatorSet
   display_name: Stimulator set
-  description: 'Description of the device or devices that generate the stimulus waveform.
+  description: 'Array describing the devices that generate the stimulus waveform.
 
     Each entry is referenced from the `stimulator_id` column through `StimulatorID`.
 
-    The specification types this field as an object while `ElementSet` and `IntensitySet` are
-
-    arrays; both shapes are accepted here.
-
     '
-  anyOf:
-  - type: array
-    items:
-      type: object
-      required:
-      - StimulatorID
-      recommended:
-      - Manufacturer
-      - ManufacturersModelName
-      properties:
-        StimulatorID:
-          $ref: objects.metadata.StimulatorID
-        Manufacturer:
-          $ref: objects.metadata.Manufacturer
-        ManufacturersModelName:
-          $ref: objects.metadata.ManufacturersModelName
-        DeviceSerialNumber:
-          $ref: objects.metadata.DeviceSerialNumber
-        SoftwareVersions:
-          $ref: objects.metadata.SoftwareVersions
-  - type: object
+  type: array
+  items:
+    type: object
     required:
     - StimulatorID
     recommended:
@@ -5184,7 +5162,7 @@ IntensitySet:
     - Value
     - Units
     recommended:
-    - Type
+    - IntensityType
     - Criterion
     properties:
       IntensityID:
@@ -5193,7 +5171,7 @@ IntensitySet:
         $ref: objects.metadata.Value
       Units:
         $ref: objects.metadata.Units
-      Type:
+      IntensityType:
         type: string
         description: 'Reference endpoint of an intensity reference, for example `resting_motor`, `active_motor`,
 
